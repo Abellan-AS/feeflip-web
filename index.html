@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FeeFlip - Reverse Fee Calculator</title>
+<link rel="icon" type="image/png" href="gemini-svg.svg">
+    <!-- Tailwind CSS v4 CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <style>
+        input[type="number"]::-webkit-inner-spin-button,
+        input[type="number"]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans min-h-screen flex flex-col justify-between transition-colors duration-300 dark:bg-slate-950 dark:text-slate-100">
+
+    <!-- Header -->
+    <header class="bg-white shadow-xs border-b border-slate-200 py-4 transition-colors duration-300 dark:bg-slate-900 dark:border-slate-800">
+        <div class="max-w-2xl mx-auto px-4 flex justify-between items-center">
+            <h1 class="text-2xl font-black text-indigo-600 tracking-tight dark:text-indigo-400">FeeFlip<span class="text-slate-400 font-light text-base dark:text-slate-500">.com</span></h1>
+            
+            <div class="flex items-center gap-3">
+                <!-- Dark Mode Toggle -->
+                <button type="button" onclick="toggleDarkMode()" aria-label="Toggle dark mode" title="Toggle dark mode" class="p-2 bg-slate-100 rounded-lg hover:bg-slate-200 transition-colors dark:bg-slate-800 dark:hover:bg-slate-700" id="theme-btn">
+                    <svg id="sun-icon" class="w-5 h-5 hidden dark:block text-amber-400" fill="currentColor" viewBox="0 0 20 20"><path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 2.293a1 1 0 011.414 0l.707.707a1 1 0 01-1.414 1.414l-.707-.707a1 1 0 010-1.414zm4.171 4.414a1 1 0 010 1.414l-.707.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM10 14a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zm-5.657-1.414a1 1 0 011.414 0l.707.707a1 1 0 01-1.414 1.414l-.707-.707a1 1 0 010-1.414zm-1.414-4.171a1 1 0 011.414 0l.707.707a1 1 0 11-1.414 1.414l-.707-.707a1 1 0 010-1.414zM10 6a4 4 0 100 8 4 4 0 000-8z"></path></svg>
+                    <svg id="moon-icon" class="w-5 h-5 block dark:hidden text-slate-600" fill="currentColor" viewBox="0 0 20 20"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path></svg>
+                </button>
+
+                <!-- Language Selector Dropdown -->
+                <select id="langSelect" aria-label="Language selector" onchange="changeLanguage(this.value)" class="bg-slate-100 border border-slate-200 rounded-lg px-3 py-2 text-sm font-medium focus:outline-hidden dark:bg-slate-800 dark:border-slate-700 dark:text-white">
+                    <option value="en">English 🇬🇧</option>
+                    <option value="es">Español 🇪🇸</option>
+                    <option value="fr">Français 🇫🇷</option>
+                    <option value="de">Deutsch 🇩🇪</option>
+                    <option value="zh">中文 🇨🇳</option>
+                    <option value="it">Italiano 🇮🇹</option>
+                    <option value="pt">Português 🇵🇹</option>
+                </select>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-2xl w-full mx-auto px-4 py-8 flex-grow">
+        <div class="bg-white rounded-2xl shadow-xl border border-slate-100 p-6 md:p-8 transition-colors duration-300 dark:bg-slate-900 dark:border-slate-800">
+            
+            <div class="text-center mb-8">
+                <h2 id="txt-title" class="text-3xl font-black text-slate-950 dark:text-white tracking-tight">Reverse Fee Calculator</h2>
+                <p id="txt-subtitle" class="text-slate-500 dark:text-slate-400 text-sm mt-2">Find out the exact listing price required to secure your target net profit.</p>
+            </div>
+
+            <!-- Platform Selector Grid -->
+            <label id="txt-platform-label" class="block text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-3">Select Platform</label>
+            <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 mb-8">
+                <button onclick="selectPlatform('ebay')" id="btn-ebay" class="platform-btn p-3 text-center text-sm font-semibold rounded-xl border border-slate-200 bg-slate-50 text-slate-700 transition-all dark:border-slate-800 dark:bg-slate-800/50 dark:text-slate-300">eBay</button>
+                <button onclick="selectPlatform('etsy')" id="btn-etsy" class="platform-btn p-3 text-center text-sm font-semibold rounded-xl border border-slate-200 bg-slate-50 text-slate-700 transition-all dark:border-slate-800 dark:bg-slate-800/50 dark:text-slate-300">Etsy</button>
+                <button onclick="selectPlatform('stripe')" id="btn-stripe" class="platform-btn p-3 text-center text-sm font-semibold rounded-xl border border-slate-200 bg-slate-50 text-slate-700 transition-all dark:border-slate-800 dark:bg-slate-800/50 dark:text-slate-300">Stripe</button>
+                <button onclick="selectPlatform('paypal')" id="btn-paypal" class="platform-btn p-3 text-center text-sm font-semibold rounded-xl border border-slate-200 bg-slate-50 text-slate-700 transition-all dark:border-slate-800 dark:bg-slate-800/50 dark:text-slate-300">PayPal</button>
+                <button onclick="selectPlatform('vinted')" id="btn-vinted" class="platform-btn p-3 text-center text-sm font-semibold rounded-xl border border-slate-200 bg-slate-50 text-slate-700 transition-all dark:border-slate-800 dark:bg-slate-800/50 dark:text-slate-300">Vinted Pro</button>
+                <button onclick="selectPlatform('custom')" id="btn-custom" class="platform-btn p-3 text-center text-sm font-semibold rounded-xl border border-slate-200 bg-slate-50 text-slate-700 transition-all dark:border-slate-800 dark:bg-slate-800/50 dark:text-slate-300">Custom</button>
+            </div>
+
+            <!-- Main Input Field -->
+            <div class="mb-6">
+                <label id="txt-input-label" for="netAmount" class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Target Net Payout</label>
+                <div class="relative rounded-xl shadow-xs">
+                    <input type="number" id="netAmount" oninput="calculate()" placeholder="0.00" step="0.01" min="0" class="w-full bg-slate-50 border border-slate-200 rounded-xl py-4 pl-5 pr-12 text-3xl font-black text-slate-950 focus:outline-hidden focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-all dark:bg-slate-800 dark:border-slate-700 dark:text-white dark:focus:bg-slate-900">
+                    <div class="absolute inset-y-0 right-0 pr-5 flex items-center pointer-events-none">
+                        <span class="text-slate-400 text-2xl font-bold dark:text-slate-500">$ / €</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Custom Configuration Fields (Hidden unless 'custom' is active) -->
+            <div id="custom-fields" class="hidden grid grid-cols-2 gap-4 mb-6 p-4 bg-slate-50 rounded-xl border border-slate-100 dark:bg-slate-800 dark:border-slate-700">
+                <div>
+                    <label id="txt-custom-pct" for="customPercent" class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Percentage Fee (%)</label>
+                    <input type="number" id="customPercent" oninput="calculate()" value="10" step="0.1" min="0" class="w-full bg-white border border-slate-200 rounded-lg p-2.5 text-sm font-bold text-slate-900 focus:outline-hidden focus:ring-2 focus:ring-indigo-500 dark:bg-slate-900 dark:border-slate-700 dark:text-white">
+                </div>
+                <div>
+                    <label id="txt-custom-fix" for="customFixed" class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Fixed Fee ($ / €)</label>
+                    <input type="number" id="customFixed" oninput="calculate()" value="0.30" step="0.01" min="0" class="w-full bg-white border border-slate-200 rounded-lg p-2.5 text-sm font-bold text-slate-900 focus:outline-hidden focus:ring-2 focus:ring-indigo-500 dark:bg-slate-900 dark:border-slate-700 dark:text-white">
+                </div>
+            </div>
+
+            <!-- Visual Outcome Result -->
+            <div class="bg-indigo-600 text-white rounded-2xl p-6 text-center shadow-lg transition-all dark:bg-indigo-500">
+                <p id="txt-result-label" class="text-indigo-200 text-xs font-bold uppercase tracking-widest mb-1">List Your Item At:</p>
+                <div class="text-5xl font-black mb-3 tracking-tight"><span id="resultListing">0.00</span></div>
+                <div class="text-sm text-indigo-100 border-t border-indigo-400/40 pt-3 mt-3 flex justify-between px-2 dark:border-indigo-400/20">
+                    <span id="txt-total-fee">Total Fee Deducted:</span>
+                    <span id="resultFee" class="font-extrabold">0.00</span>
+                </div>
+            </div>
+
+            <!-- Dynamic Explanatory Footer Context Box -->
+            <div class="mt-6 p-4 bg-amber-50 rounded-xl border border-amber-100 dark:bg-amber-950/30 dark:border-amber-900/40 flex gap-3">
+                <span class="text-xl">💡</span>
+                <p id="platform-info" class="text-xs text-amber-800 dark:text-amber-300 leading-relaxed"></p>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Ad/Footer Space -->
+    <footer class="bg-white border-t border-slate-200 py-6 text-center text-xs text-slate-400 transition-colors duration-300 dark:bg-slate-900 dark:border-slate-800 dark:text-slate-500">
+        <div class="max-w-2xl mx-auto px-4">
+            <p>© 2026 FeeFlip. Free native client-side tool.</p>
+            <div class="mt-4 p-3 bg-slate-100 rounded-lg text-[10px] uppercase tracking-widest text-slate-400 max-w-sm mx-auto border border-dashed border-slate-200 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-500">
+                Ad Network Slot
+            </div>
+        </div>
+    </footer>
+
+    <!-- Logic Engine & Localization Script -->
+    <script>
+        let currentPlatform = 'ebay';
+        let currentLang = 'en';
+
+        // Platform Specifications Data Dictionary
+        const platformData = {
+            ebay: { pct: 13.2, fix: 0.35 },
+            etsy: { pct: 6.5, fix: 0.20 },
+            stripe: { pct: 2.9, fix: 0.30 },
+            paypal: { pct: 3.49, fix: 0.49 },
+            vinted: { pct: 4.5, fix: 0.70 },
+            custom: { pct: 0, fix: 0 }
+        };
+
+        // Full UI Translation Matrix
+        const dictionary = {
+            en: {
+                title: "Reverse Fee Calculator",
+                subtitle: "Find out the exact listing price required to secure your target net profit.",
+                platformLabel: "Select Platform",
+                inputLabel: "Target Net Payout",
+                customPct: "Percentage Fee (%)",
+                customFix: "Fixed Fee ($ / €)",
+                resultLabel: "List Your Item At:",
+                totalFee: "Total Fee Deducted:",
+                info_ebay: "eBay standard baseline fees approximate 13.2% of the total transaction value plus a 0.35 fixed fee per order.",
+                info_etsy: "Etsy charges a flat 6.5% transaction fee on the total sales price plus a 0.20 fixed listing/payment fee.",
+                info_stripe: "Stripe standard digital processing charges are 2.9% plus 0.30 per successful card charge transaction.",
+                info_paypal: "PayPal standard commercial rates within domestic markets stand at 3.49% plus a 0.49 fixed transaction fee.",
+                info_vinted: "Vinted Pro features custom seller platform structural handling commission rates around 4.5% + 0.70 fixed structural fee.",
+                info_custom: "Manually modify parameters to reverse-engineer configurations for local platforms, regional payment handlers, or custom sales frameworks."
+            },
+            es: {
+                title: "Calculadora Inversa de Comisiones",
+                subtitle: "Descubre a qué precio publicar tu artículo para recibir tu beneficio neto deseado.",
+                platformLabel: "Selecciona Plataforma",
+                inputLabel: "Ganancia Neta Deseada",
+                customPct: "Comisión Porcentual (%)",
+                customFix: "Comisión Fija ($ / €)",
+                resultLabel: "Debes Publicar tu Artículo a:",
+                totalFee: "Comisión Total Retenida:",
+                info_ebay: "eBay aplica de manera general una tarifa del 13.2% sobre el total bruto de la venta más un cargo fijo de 0.35 por transacción.",
+                info_etsy: "Etsy cobra una comisión directa por transacción del 6.5% sobre el precio de venta más 0.20 fijos de procesamiento.",
+                info_stripe: "Stripe aplica tarifas estándar de pasarela de pago equivalentes al 2.9% más 0.30 fijos por operación.",
+                info_paypal: "PayPal procesa transacciones comerciales con una tasa base estándar de 3.49% más 0.49 fijos por recepción.",
+                info_vinted: "Vinted Pro aplica comisiones de gestión y servicio para cuentas profesionales de aproximadamente el 4.5% + 0.70 fijos.",
+                info_custom: "Ajusta los campos manualmente para emular las condiciones de cualquier otra plataforma regional, tienda propia o pasarela de pago local."
+            },
+            fr: {
+                title: "Calculateur de Frais Inversé",
+                subtitle: "Découvrez le prix de vente exact requis pour garantir votre bénéfice net.",
+                platformLabel: "Sélectionnez une plateforme",
+                inputLabel: "Paiement Net Cible",
+                customPct: "Frais de pourcentage (%)",
+                customFix: "Frais fixes ($ / €)",
+                resultLabel: "Mettez votre article en vente à:",
+                totalFee: "Frais totaux déduits:",
+                info_ebay: "Les frais d'eBay s'élèvent généralement à 13.2% de la valeur totale de la transaction, plus un montant fixe de 0.35 par commande.",
+                info_etsy: "Etsy facture des frais de transaction forfaitaires de 6.5% sur le prix de vente total plus des frais fixes de 0.20.",
+                info_stripe: "Les frais de traitement standards de Stripe sont de 2.9% plus 0.30 par transaction par carte réussie.",
+                info_paypal: "Les tarifs commerciaux de PayPal s'élèvent à 3.49% plus des frais de transaction fixes de 0.49.",
+                info_vinted: "Vinted Pro applique des frais de gestion pour les vendeurs professionnels d'environ 4.5% + 0.70 fixe.",
+                info_custom: "Modifiez manuellement les paramètres pour calculer les frais des places de marché locales ou de vos propres systèmes de paiement."
+            },
+            de: {
+                title: "Inverser Gebührenrechner",
+                subtitle: "Ermitteln Sie den genauen Verkaufspreis, der für Ihren gewünschten Nettogewinn erforderlich ist.",
+                platformLabel: "Plattform auswählen",
+                inputLabel: "Gewünschter Nettoerlös",
+                customPct: "Prozentuale Gebühr (%)",
+                customFix: "Festgebühr ($ / €)",
+                resultLabel: "Artikel listen für:",
+                totalFee: "Abgezogene Gesamtgebühr:",
+                info_ebay: "Die Standardgebühren von eBay betragen ca. 13.2% des Gesamttransaktionswerts plus einer Festgebühr von 0.35 pro Bestellung.",
+                info_etsy: "Etsy berechnet eine pauschale Transaktionsgebühr von 6.5% auf den Gesamtverkaufspreis plus 0.20 Einstell-/Zahlungsgebühr.",
+                info_stripe: "Die Standard-Verarbeitungsgebühren von Stripe betragen 2.9% plus 0.30 pro erfolgreicher Kartentransaktion.",
+                info_paypal: "Die kommerziellen Standardtarife von PayPal betragen 3.49% plus eine feste Transaktionsgebühr von 0.49.",
+                info_vinted: "Vinted Pro bietet Provisionssätze für professionelle Verkäufer von ca. 4.5% + 0.70 Festgebühr.",
+                info_custom: "Passen Sie die Parameter manuell an, um Berechnungen für lokale Plattformen oder kundenspezifische Verkaufssysteme durchzuführen."
+            },
+            zh: {
+                title: "反向费率计算器",
+                subtitle: "计算出确保您获得目标净利润所需的精确上架销售价格。",
+                platformLabel: "选择交易平台",
+                inputLabel: "目标净收款额",
+                customPct: "百分比费率 (%)",
+                customFix: "固定手续费 ($ / €)",
+                resultLabel: "您应该将产品定价为:",
+                totalFee: "扣除的总手续费:",
+                info_ebay: "eBay 的标准基础费用约为交易总额的 13.2%，外加每笔订单 0.35 的固定费用。",
+                info_etsy: "Etsy 对总销售价格收取 6.5% 的固定交易费，外加 0.20 的固定上架/支付处理费。",
+                info_stripe: "Stripe 的标准数字卡片处理费用为 2.9%，外加每笔成功交易 0.30 的固定费用。",
+                info_paypal: "PayPal 在国内市场的标准商业费率为 3.49%，外加 0.49 的固定交易手续费。",
+                info_vinted: "Vinted Pro 针对专业卖家的定制平台处理佣金费率约为 4.5% + 0.70 固定结构费。",
+                info_custom: "手动修改参数，即可逆向推算本地电商平台、区域支付系统或自定义销售框架的费率配置。"
+            },
+            it: {
+                title: "Calcolatore Inverso di Commissioni",
+                subtitle: "Calcola il prezzo esatto a cui vendere il tuo oggetto per ottenere il guadagno netto desiderato.",
+                platformLabel: "Seleziona Piattaforma",
+                inputLabel: "Guadagno Netto Desiderato",
+                customPct: "Commissione Percentuale (%)",
+                customFix: "Commissione Fissa ($ / €)",
+                resultLabel: "Metti in vendita il tuo oggetto a:",
+                totalFee: "Commissioni Totali Trattenute:",
+                info_ebay: "eBay applica generalmente una tariffa del 13.2% sul valore totale della transazione più una commissione fissa di 0.35 per ordine.",
+                info_etsy: "Etsy addebita una commissione di transazione fissa del 6.5% sul prezzo totale di vendita più 0.20 fissi di gestione.",
+                info_stripe: "Le tariffe standard di Stripe per l'elaborazione dei pagamenti sono del 2.9% più 0.30 per ogni transazione riuscita.",
+                info_paypal: "Le tariffe commerciali standard di PayPal per il mercato nazionale sono del 3.49% più 0.49 di commissione fissa.",
+                info_vinted: "Vinted Pro applica tariffe di gestione per venditori professionisti pari a circa il 4.5% + 0.70 fisso.",
+                info_custom: "Modifica manualmente i parametri per calcolare le tariffe di qualsiasi altra piattaforma locale o del tuo sito di e-commerce."
+            },
+            pt: {
+                title: "Calculadora Inversa de Comissões",
+                subtitle: "Descubra o preço exato a que deve anunciar o seu artigo para receber o lucro líquido desejado.",
+                platformLabel: "Selecionar Plataforma",
+                inputLabel: "Lucro Líquido Desejado",
+                customPct: "Comissão Percentual (%)",
+                customFix: "Comissão Fixa ($ / €)",
+                resultLabel: "Deve anunciar o seu artigo a:",
+                totalFee: "Comissão Total Retida:",
+                info_ebay: "A eBay aplica geralmente uma taxa de 13.2% sobre o valor total da transação mais uma comissão fixa de 0.35 por pedido.",
+                info_etsy: "A Etsy cobra uma taxa de transação fixa de 6.5% sobre o preço total de venda mais 0.20 fixos de processamento.",
+                info_stripe: "As taxas padrão da Stripe para processamento digital são de 2.9% mais 0.30 por transação de cartão bem-sucedida.",
+                info_paypal: "As taxas comerciais padrão da PayPal no mercado interno são de 3.49% mais 0.49 de comissão fixa por transação.",
+                info_vinted: "A Vinted Pro aplica taxas de serviço para vendedores profissionais de cerca de 4.5% + 0.70 fixo.",
+                info_custom: "Ajuste os parâmetros manualmente para calcular os custos de plataformas locais, lojas próprias ou gateways de pagamento regionais."
+            }
+        };
+
+        // Initialize UI Elements
+        function selectPlatform(platform) {
+            currentPlatform = platform;
+            
+            // Render active button states
+            document.querySelectorAll('.platform-btn').forEach(btn => {
+                btn.className = "platform-btn p-3 text-center text-sm font-semibold rounded-xl border border-slate-200 bg-slate-50 text-slate-700 transition-all dark:border-slate-800 dark:bg-slate-800/50 dark:text-slate-300";
+            });
+            
+            const activeBtn = document.getElementById(`btn-${platform}`);
+            if (activeBtn) {
+                activeBtn.className = "platform-btn p-3 text-center text-sm font-bold rounded-xl border border-indigo-600 bg-indigo-50 text-indigo-700 dark:border-indigo-500 dark:bg-indigo-950/40 dark:text-indigo-400 ring-2 ring-indigo-500/10";
+            }
+
+            const customFields = document.getElementById('custom-fields');
+            if (platform === 'custom') {
+                customFields.classList.remove('hidden');
+            } else {
+                customFields.classList.add('hidden');
+            }
+
+            updateInfoText();
+            calculate();
+        }
+
+        function changeLanguage(lang) {
+            currentLang = lang;
+            
+            // Core DOM Translations Mapping
+            document.getElementById('txt-title').innerText = dictionary[lang].title;
+            document.getElementById('txt-subtitle').innerText = dictionary[lang].subtitle;
+            document.getElementById('txt-platform-label').innerText = dictionary[lang].platformLabel;
+            document.getElementById('txt-input-label').innerText = dictionary[lang].inputLabel;
+            document.getElementById('txt-custom-pct').innerText = dictionary[lang].customPct;
+            document.getElementById('txt-custom-fix').innerText = dictionary[lang].customFix;
+            document.getElementById('txt-result-label').innerText = dictionary[lang].resultLabel;
+            document.getElementById('txt-total-fee').innerText = dictionary[lang].totalFee;
+
+            updateInfoText();
+            calculate();
+        }
+
+        function updateInfoText() {
+            document.getElementById('platform-info').innerText = dictionary[currentLang][`info_${currentPlatform}`];
+        }
+
+        function calculate() {
+            const netAmount = parseFloat(document.getElementById('netAmount').value);
+            
+            if (isNaN(netAmount) || netAmount <= 0) {
+                document.getElementById('resultListing').innerText = "0.00";
+                document.getElementById('resultFee').innerText = "0.00";
+                return;
+            }
+
+            let percent = 0;
+            let fixed = 0;
+
+            if (currentPlatform === 'custom') {
+                percent = parseFloat(document.getElementById('customPercent').value) || 0;
+                fixed = parseFloat(document.getElementById('customFixed').value) || 0;
+            } else {
+                percent = platformData[currentPlatform].pct;
+                fixed = platformData[currentPlatform].fix;
+            }
+
+            // Core Reverse Engineering Formula: Listing Price = (Net + Fixed) / (1 - Percentage)
+            const percentDecimal = percent / 100;
+            
+            if (percentDecimal >= 1) {
+                document.getElementById('resultListing').innerText = "Error";
+                document.getElementById('resultFee').innerText = "---";
+                return;
+            }
+
+            const listingPrice = (netAmount + fixed) / (1 - percentDecimal);
+            const totalFee = listingPrice - netAmount;
+
+            document.getElementById('resultListing').innerText = listingPrice.toFixed(2);
+            document.getElementById('resultFee').innerText = totalFee.toFixed(2);
+        }
+
+        // Dark Mode Controller Switch
+        function toggleDarkMode() {
+            const html = document.documentElement;
+            if (html.classList.contains('dark')) {
+                html.classList.remove('dark');
+                localStorage.setItem('theme', 'light');
+            } else {
+                html.classList.add('dark');
+                localStorage.setItem('theme', 'dark');
+            }
+        }
+
+        // Run Setup Initialization On Window Mount
+        window.onload = () => {
+            // Check System/Storage Dark Preference
+            if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+
+            // Fire default UI builds
+            selectPlatform('ebay');
+            changeLanguage('en');
+        };
+    </script>
+</body>
+</html>
